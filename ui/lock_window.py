@@ -18,10 +18,12 @@ try:
     from ui.video_canvas import VideoCanvas
     from config.settings import Settings
     from vision.exercise_verifier import ExerciseStatus
+    from core.keyboard_blocker import KeyboardBlocker
 except ImportError:
     from .video_canvas import VideoCanvas
     from ..config.settings import Settings
     from ..vision.exercise_verifier import ExerciseStatus
+    from ..core.keyboard_blocker import KeyboardBlocker
 
 
 class SecondaryLockOverlay(QWidget):
@@ -108,6 +110,10 @@ class LockWindow(QWidget):
             Qt.WindowType.Window
         )
         self.setAttribute(Qt.WidgetAttribute.WA_ShowWithoutActivating, False)
+
+        # Instanciar e iniciar el bloqueador de teclado
+        self.keyboard_blocker = KeyboardBlocker()
+        self.keyboard_blocker.start()
 
         self._init_ui()
         self._setup_shortcuts()
@@ -420,6 +426,7 @@ class LockWindow(QWidget):
         """Evita el cierre arbitrario hasta la confirmación de desbloqueo."""
         if self.unlocked_authorized:
             self._close_secondary_overlays()
+            self.keyboard_blocker.stop()
             event.accept()
         else:
             event.ignore()

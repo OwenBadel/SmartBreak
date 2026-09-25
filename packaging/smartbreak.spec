@@ -56,7 +56,7 @@ a = Analysis(
     hookspath=[],
     hooksconfig={},
     runtime_hooks=[],
-    excludes=['tkinter', 'matplotlib', 'torch', 'torchvision', 'scipy', 'pandas', 'IPython'],
+    excludes=['tkinter', 'torch', 'torchvision', 'scipy', 'pandas', 'IPython'],
     win_no_prefer_redirects=False,
     win_private_assemblies=False,
     cipher=block_cipher,
@@ -85,11 +85,15 @@ exe = EXE(
     icon=str(assets_dir / 'icon.ico'),
 )
 
+import mediapipe
+mediapipe_dir = os.path.dirname(mediapipe.__file__)
+
 coll = COLLECT(
     exe,
     a.binaries,
     a.zipfiles,
     a.datas,
+    Tree(mediapipe_dir, prefix='mediapipe'),
     strip=False,
     upx=True,
     upx_exclude=[],

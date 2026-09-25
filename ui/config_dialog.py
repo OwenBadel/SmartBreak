@@ -14,8 +14,10 @@ from pathlib import Path
 from PyQt6.QtCore import Qt, pyqtSignal
 from PyQt6.QtWidgets import (
     QDialog, QVBoxLayout, QHBoxLayout, QLabel, QSpinBox, 
-    QComboBox, QCheckBox, QPushButton, QFrame, QSlider, QSizePolicy
+    QComboBox, QCheckBox, QPushButton, QFrame, QSlider, QSizePolicy,
+    QGraphicsDropShadowEffect
 )
+from PyQt6.QtGui import QColor
 try:
     from config.settings import Settings
 except ImportError:
@@ -66,9 +68,17 @@ class ConfigDialog(QDialog):
         
         # Formato de título único estricto: '{Nombre Ventana} - {Nombre App}'
         self.setWindowTitle("Configuración de Rendimiento - SmartBreak")
-        self.setFixedSize(580, 760)
+        self.setMinimumSize(580, 600)
         self.setWindowFlags(Qt.WindowType.Dialog | Qt.WindowType.WindowCloseButtonHint)
         self._init_ui()
+
+    def _apply_shadow(self, widget: QFrame) -> None:
+        """Aplica una sombra suave y moderna tipo web al contenedor."""
+        shadow = QGraphicsDropShadowEffect(self)
+        shadow.setBlurRadius(20)
+        shadow.setColor(QColor(0, 0, 0, 100))
+        shadow.setOffset(0, 4)
+        widget.setGraphicsEffect(shadow)
 
     def _init_ui(self) -> None:
         spin_up_url = _get_asset_path("spin_up.png")
@@ -144,6 +154,9 @@ class ConfigDialog(QDialog):
                 padding: 6px 10px;
                 min-height: 34px;
             }}
+            QSpinBox:hover {{
+                border: 2px solid #3B4B6E;
+            }}
             QSpinBox:focus {{
                 border: 2px solid #CCFF00;
                 background-color: #1B2338;
@@ -192,8 +205,11 @@ class ConfigDialog(QDialog):
                 color: #FFFFFF;
                 font-size: 13px;
                 font-weight: 800;
-                padding: 6px 12px;
-                min-height: 36px;
+                padding: 4px 10px;
+                min-height: 28px;
+            }}
+            QComboBox:hover {{
+                border: 2px solid #3B4B6E;
             }}
             QComboBox:focus {{
                 border: 2px solid #00F0FF;
@@ -257,8 +273,8 @@ class ConfigDialog(QDialog):
                 letter-spacing: 1.5px;
                 border: none;
                 border-radius: 10px;
-                padding: 12px 24px;
-                min-height: 42px;
+                padding: 8px 18px;
+                min-height: 32px;
             }}
             QPushButton.primary-btn:hover {{
                 background-color: #E0FF4F;
@@ -268,10 +284,10 @@ class ConfigDialog(QDialog):
                 color: #94A3B8;
                 border: 2px solid #28354D;
                 border-radius: 10px;
-                padding: 12px 20px;
+                padding: 8px 16px;
                 font-size: 13px;
                 font-weight: 800;
-                min-height: 42px;
+                min-height: 32px;
             }}
             QPushButton.cancel-btn:hover {{
                 background-color: #1F283E;
@@ -280,8 +296,8 @@ class ConfigDialog(QDialog):
         """)
 
         main_layout = QVBoxLayout(self)
-        main_layout.setContentsMargins(28, 20, 28, 20)
-        main_layout.setSpacing(14)
+        main_layout.setContentsMargins(16, 12, 16, 12)
+        main_layout.setSpacing(8)
 
         # -------------------------------------------------------------
         # Encabezado
@@ -294,7 +310,7 @@ class ConfigDialog(QDialog):
         head_box.addWidget(badge)
 
         title = QLabel("CONFIGURACIÓN DE RENDIMIENTO")
-        title.setStyleSheet("font-size: 22px; font-weight: 900; color: #FFFFFF;")
+        title.setStyleSheet("font-size: 18px; font-weight: 900; color: #FFFFFF;")
         head_box.addWidget(title)
 
         subtitle = QLabel("Personaliza tus umbrales ergonómicos y el ejercicio para desbloquear.")
@@ -307,9 +323,10 @@ class ConfigDialog(QDialog):
         # -------------------------------------------------------------
         card_fatigue = QFrame()
         card_fatigue.setProperty("class", "card")
+        self._apply_shadow(card_fatigue)
         fatigue_layout = QVBoxLayout(card_fatigue)
-        fatigue_layout.setContentsMargins(18, 14, 18, 14)
-        fatigue_layout.setSpacing(10)
+        fatigue_layout.setContentsMargins(14, 10, 14, 10)
+        fatigue_layout.setSpacing(6)
 
         tag_1 = QLabel("1. MONITOREO DE CARGA Y POSTURA")
         tag_1.setProperty("class", "section-tag")
@@ -323,10 +340,11 @@ class ConfigDialog(QDialog):
         col_sit.addWidget(lbl_sit_title)
 
         row_sit = QHBoxLayout()
-        row_sit.setSpacing(12)
+        row_sit.setSpacing(10)
         self.slider_sitting = QSlider(Qt.Orientation.Horizontal)
         self.slider_sitting.setRange(10, 180)
         self.slider_sitting.setValue(self.settings.max_sitting_minutes)
+        self.slider_sitting.setCursor(Qt.CursorShape.PointingHandCursor)
         row_sit.addWidget(self.slider_sitting)
 
         self.lbl_sit_val = QLabel(f"{self.settings.max_sitting_minutes} min")
@@ -344,10 +362,11 @@ class ConfigDialog(QDialog):
         col_bad.addWidget(lbl_bad_title)
 
         row_bad = QHBoxLayout()
-        row_bad.setSpacing(12)
+        row_bad.setSpacing(10)
         self.slider_bad = QSlider(Qt.Orientation.Horizontal)
         self.slider_bad.setRange(2, 60)
         self.slider_bad.setValue(self.settings.max_bad_posture_minutes)
+        self.slider_bad.setCursor(Qt.CursorShape.PointingHandCursor)
         row_bad.addWidget(self.slider_bad)
 
         self.lbl_bad_val = QLabel(f"{self.settings.max_bad_posture_minutes} min")
@@ -368,9 +387,10 @@ class ConfigDialog(QDialog):
         # -------------------------------------------------------------
         card_exercise = QFrame()
         card_exercise.setProperty("class", "card")
+        self._apply_shadow(card_exercise)
         ex_layout = QVBoxLayout(card_exercise)
-        ex_layout.setContentsMargins(18, 14, 18, 14)
-        ex_layout.setSpacing(10)
+        ex_layout.setContentsMargins(14, 10, 14, 10)
+        ex_layout.setSpacing(6)
 
         tag_2 = QLabel("2. OBJETIVO DE DESBLOQUEO ACTIVO")
         tag_2.setProperty("class", "section-tag")
@@ -388,12 +408,13 @@ class ConfigDialog(QDialog):
         self.combo_exercise.addItem("Sentadillas profundas (Deep Squats)", "squats")
         idx = 0 if self.settings.exercise_type == "overhead_stretch" else 1
         self.combo_exercise.setCurrentIndex(idx)
+        self.combo_exercise.setCursor(Qt.CursorShape.PointingHandCursor)
         col_combo.addWidget(self.combo_exercise)
         ex_layout.addLayout(col_combo)
 
         # Fila 2: Duración y Repeticiones (Con QSpinBox estilizados con flechas ▲ y ▼)
         row_metrics = QHBoxLayout()
-        row_metrics.setSpacing(16)
+        row_metrics.setSpacing(10)
 
         # Columna Duración
         col_dur = QVBoxLayout()
@@ -406,6 +427,7 @@ class ConfigDialog(QDialog):
         self.spin_duration.setRange(15, 300)
         self.spin_duration.setSuffix(" seg")
         self.spin_duration.setValue(self.settings.exercise_duration_seconds)
+        self.spin_duration.setCursor(Qt.CursorShape.PointingHandCursor)
         col_dur.addWidget(self.spin_duration)
         row_metrics.addLayout(col_dur)
 
@@ -420,6 +442,7 @@ class ConfigDialog(QDialog):
         self.spin_reps.setRange(3, 50)
         self.spin_reps.setSuffix(" reps")
         self.spin_reps.setValue(self.settings.exercise_target_reps)
+        self.spin_reps.setCursor(Qt.CursorShape.PointingHandCursor)
         col_reps.addWidget(self.spin_reps)
         row_metrics.addLayout(col_reps)
 
@@ -431,9 +454,10 @@ class ConfigDialog(QDialog):
         # -------------------------------------------------------------
         card_sys = QFrame()
         card_sys.setProperty("class", "card")
+        self._apply_shadow(card_sys)
         sys_layout = QVBoxLayout(card_sys)
-        sys_layout.setContentsMargins(18, 14, 18, 14)
-        sys_layout.setSpacing(10)
+        sys_layout.setContentsMargins(14, 10, 14, 10)
+        sys_layout.setSpacing(6)
 
         tag_3 = QLabel("3. DISPOSITIVO Y SISTEMA OPERATIVO")
         tag_3.setProperty("class", "section-tag")
@@ -449,6 +473,7 @@ class ConfigDialog(QDialog):
 
         self.combo_camera = AutoDetectCameraComboBox(on_before_popup=self._populate_cameras)
         self.combo_camera.setMinimumWidth(320)
+        self.combo_camera.setCursor(Qt.CursorShape.PointingHandCursor)
         row_cam.addWidget(self.combo_camera)
 
         sys_layout.addLayout(row_cam)
