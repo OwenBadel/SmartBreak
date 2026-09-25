@@ -1,7 +1,7 @@
 [Setup]
 ; Información General
 AppName=SmartBreak
-AppVersion=1.0.0
+AppVersion=1.1.0
 AppPublisher=LemonFabrica
 
 ; Directorio de Instalación (Requiere permisos de administrador por defecto)
@@ -14,7 +14,7 @@ UninstallDisplayIcon={app}\SmartBreak.exe
 
 ; Archivo de Salida (El Instalador final)
 OutputDir=..\dist
-OutputBaseFilename=SmartBreak_Instalador_v1.0
+OutputBaseFilename=SmartBreak_Instalador_v1.1
 
 ; Compresión Ultra (Reduce el peso del instalador significativamente)
 Compression=lzma2/ultra64
