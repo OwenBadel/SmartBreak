@@ -131,7 +131,12 @@ class VisionWorker(QThread):
                     with self._lock:
                         results, _ = self.pose_detector.process_frame(frame)
                         status = self.exercise_verifier.update(results, frame.shape, delta)
-                        color = (0, 230, 150) if status.is_standing else (0, 100, 255)
+                        if status.is_standing:
+                            color = (0, 230, 150)  # Neón Volt
+                        elif not getattr(status, "requires_standing", False):
+                            color = (255, 230, 0)  # Cyan Eléctrico deportivo
+                        else:
+                            color = (0, 100, 255)  # Rojo Alerta
                         annotated_frame = self.pose_detector.draw_landmarks(frame, results, custom_color=color)
 
                     # Emitir señal al hilo principal de Qt de manera asíncrona y segura

@@ -18,11 +18,13 @@ try:
     from ui.video_canvas import VideoCanvas
     from config.settings import Settings
     from vision.exercise_verifier import ExerciseStatus
+    from vision.exercise_catalog import get_exercise_metadata, EXERCISE_CATALOG
     from core.keyboard_blocker import KeyboardBlocker
 except ImportError:
     from .video_canvas import VideoCanvas
     from ..config.settings import Settings
     from ..vision.exercise_verifier import ExerciseStatus
+    from ..vision.exercise_catalog import get_exercise_metadata, EXERCISE_CATALOG
     from ..core.keyboard_blocker import KeyboardBlocker
 
 
@@ -242,8 +244,13 @@ class LockWindow(QWidget):
         self.title_lbl.setProperty("class", "title")
         title_box.addWidget(self.title_lbl)
 
-        # Subtítulo explicativo con máxima claridad
-        self.sub_lbl = QLabel("Ponte de pie frente a la cámara y completa el objetivo físico para desbloquear tu equipo.")
+        # Subtítulo explicativo dinámico según requerimiento de postura
+        meta = get_exercise_metadata(self.settings.exercise_type)
+        if meta.requires_standing:
+            sub_text = "Ponte de pie frente a la cámara y completa el objetivo físico para desbloquear tu equipo."
+        else:
+            sub_text = "Realiza el ejercicio ergonómico frente a tu cámara (puedes hacerlo sentado o de pie) para desbloquear."
+        self.sub_lbl = QLabel(sub_text)
         self.sub_lbl.setProperty("class", "subtitle")
         title_box.addWidget(self.sub_lbl)
 
@@ -282,16 +289,11 @@ class LockWindow(QWidget):
         ex_tag.setProperty("class", "metric-label")
         ex_box.addWidget(ex_tag)
 
-        ex_name = "ESTIRAMIENTO OVERHEAD" if self.settings.exercise_type == "overhead_stretch" else "SENTADILLAS PROFUNDAS"
-        self.exercise_name_lbl = QLabel(ex_name)
+        self.exercise_name_lbl = QLabel(meta.name.upper())
         self.exercise_name_lbl.setStyleSheet("font-size: 20px; font-weight: 900; color: #CCFF00; letter-spacing: 0.5px;")
         ex_box.addWidget(self.exercise_name_lbl)
 
-        self.exercise_desc_lbl = QLabel(
-            "Eleva ambos brazos rectos hacia el techo manteniendo la espalda erguida."
-            if self.settings.exercise_type == "overhead_stretch"
-            else "Flexiona las rodillas a 90° con la espalda recta y regresa a posición de pie."
-        )
+        self.exercise_desc_lbl = QLabel(meta.description)
         self.exercise_desc_lbl.setWordWrap(True)
         self.exercise_desc_lbl.setStyleSheet("color: #CBD5E1; font-size: 13px; font-weight: 500; line-height: 1.4;")
         ex_box.addWidget(self.exercise_desc_lbl)
@@ -359,16 +361,12 @@ class LockWindow(QWidget):
         tips_title.setStyleSheet("font-size: 11px; font-weight: 900; color: #00F0FF; letter-spacing: 1px;")
         tips_layout.addWidget(tips_title)
 
-        tip1 = QLabel("✓ Espalda recta y mirada al frente")
-        tip1.setStyleSheet("color: #E2E8F0; font-size: 12px; font-weight: 600;")
-        tip2 = QLabel("✓ Piernas extendidas (Ángulo > 165°)")
-        tip2.setStyleSheet("color: #E2E8F0; font-size: 12px; font-weight: 600;")
-        tip3 = QLabel("✓ Respiración rítmica y profunda")
-        tip3.setStyleSheet("color: #E2E8F0; font-size: 12px; font-weight: 600;")
-        
-        tips_layout.addWidget(tip1)
-        tips_layout.addWidget(tip2)
-        tips_layout.addWidget(tip3)
+        for tip_text in meta.tips:
+            t_lbl = QLabel(tip_text)
+            t_lbl.setStyleSheet("color: #E2E8F0; font-size: 12px; font-weight: 600;")
+            t_lbl.setWordWrap(True)
+            tips_layout.addWidget(t_lbl)
+
         sidebar_layout.addWidget(tips_box)
 
         content_layout.addWidget(sidebar_frame, stretch=3)
@@ -435,48 +433,78 @@ class LockWindow(QWidget):
         """
         Recibe la telemetría biomecánica del motor de visión y refresca el HUD.
         """
+        meta = get_exercise_metadata(status.current_exercise)
+
         # Actualizar el lienzo deportivo con el feed de cámara
         self.video_canvas.update_frame(
             frame_bgr=frame_bgr,
             feedback=status.feedback_message,
             progress=status.progress_percent,
             is_standing=status.is_standing,
-            knee_angle=status.knee_angle
+            knee_angle=status.knee_angle,
+            requires_standing=status.requires_standing
         )
 
-        # Actualizar tarjeta de bipedestación
-        if status.is_standing:
-            self.standing_status_lbl.setText(f"⚡ DE PIE • {status.knee_angle:.1f}°")
-            self.standing_status_lbl.setStyleSheet("""
-                background-color: rgba(204, 255, 0, 0.15);
-                border: 1px solid #CCFF00;
-                color: #CCFF00;
-                font-size: 13px;
-                font-weight: 900;
-                padding: 8px 14px;
-                border-radius: 8px;
-                letter-spacing: 1px;
-            """)
+        # Actualizar tarjeta de bipedestación o postura de escritorio
+        if status.requires_standing:
+            if status.is_standing:
+                self.standing_status_lbl.setText(f"⚡ DE PIE • {status.knee_angle:.1f}°")
+                self.standing_status_lbl.setStyleSheet("""
+                    background-color: rgba(204, 255, 0, 0.15);
+                    border: 1px solid #CCFF00;
+                    color: #CCFF00;
+                    font-size: 13px;
+                    font-weight: 900;
+                    padding: 8px 14px;
+                    border-radius: 8px;
+                    letter-spacing: 1px;
+                """)
+            else:
+                self.standing_status_lbl.setText(f"🪑 EN ESCRITORIO • {status.knee_angle:.1f}°")
+                self.standing_status_lbl.setStyleSheet("""
+                    background-color: rgba(255, 45, 85, 0.15);
+                    border: 1px solid #FF2D55;
+                    color: #FF2D55;
+                    font-size: 13px;
+                    font-weight: 900;
+                    padding: 8px 14px;
+                    border-radius: 8px;
+                    letter-spacing: 1px;
+                """)
         else:
-            self.standing_status_lbl.setText(f"🪑 EN ESCRITORIO • {status.knee_angle:.1f}°")
-            self.standing_status_lbl.setStyleSheet("""
-                background-color: rgba(255, 45, 85, 0.15);
-                border: 1px solid #FF2D55;
-                color: #FF2D55;
-                font-size: 13px;
-                font-weight: 900;
-                padding: 8px 14px;
-                border-radius: 8px;
-                letter-spacing: 1px;
-            """)
+            # Ejercicio de escritorio (apto sentado o de pie sin penalización)
+            if status.is_standing:
+                self.standing_status_lbl.setText("⚡ DE PIE • ACTIVO")
+                self.standing_status_lbl.setStyleSheet("""
+                    background-color: rgba(204, 255, 0, 0.15);
+                    border: 1px solid #CCFF00;
+                    color: #CCFF00;
+                    font-size: 13px;
+                    font-weight: 900;
+                    padding: 8px 14px;
+                    border-radius: 8px;
+                    letter-spacing: 1px;
+                """)
+            else:
+                self.standing_status_lbl.setText("🪑 EN ESCRITORIO • ACTIVO")
+                self.standing_status_lbl.setStyleSheet("""
+                    background-color: rgba(0, 240, 255, 0.15);
+                    border: 1px solid #00F0FF;
+                    color: #00F0FF;
+                    font-size: 13px;
+                    font-weight: 900;
+                    padding: 8px 14px;
+                    border-radius: 8px;
+                    letter-spacing: 1px;
+                """)
 
-        # Actualizar dígitos grandes según ejercicio
-        if status.current_exercise == "squats":
+        # Actualizar dígitos grandes según la métrica del ejercicio
+        if meta.metric_type == "reps":
             self.metric_label.setText("REPETICIONES COMPLETADAS")
             self.metric_value_lbl.setText(f"{status.completed_reps:02d}")
             self.metric_unit_lbl.setText(f"/ {status.target_reps:02d} REPS")
         else:
-            self.metric_label.setText("TIEMPO EN ESTIRAMIENTO")
+            self.metric_label.setText("TIEMPO EN EJERCICIO")
             self.metric_value_lbl.setText(f"{int(status.elapsed_seconds):02d}")
             self.metric_unit_lbl.setText(f"/ {int(status.target_seconds):02d} SEG")
 

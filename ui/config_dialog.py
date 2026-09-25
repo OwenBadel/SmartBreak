@@ -29,6 +29,11 @@ except ImportError:
     from ..vision.camera_manager import get_available_cameras
 
 try:
+    from vision.exercise_catalog import EXERCISE_CATALOG, get_exercise_metadata
+except ImportError:
+    from ..vision.exercise_catalog import EXERCISE_CATALOG, get_exercise_metadata
+
+try:
     from config.autostart import set_autostart, is_autostart_enabled
 except ImportError:
     from ..config.autostart import set_autostart, is_autostart_enabled
@@ -404,12 +409,23 @@ class ConfigDialog(QDialog):
         col_combo.addWidget(lbl_ex_type)
 
         self.combo_exercise = QComboBox()
-        self.combo_exercise.addItem("Brazos sobre la cabeza (Estiramiento Overhead)", "overhead_stretch")
-        self.combo_exercise.addItem("Sentadillas profundas (Deep Squats)", "squats")
-        idx = 0 if self.settings.exercise_type == "overhead_stretch" else 1
-        self.combo_exercise.setCurrentIndex(idx)
+        for ex_id, meta in EXERCISE_CATALOG.items():
+            self.combo_exercise.addItem(f"{meta.name} ({meta.category})", ex_id)
+
+        match_idx = self.combo_exercise.findData(self.settings.exercise_type)
+        if match_idx >= 0:
+            self.combo_exercise.setCurrentIndex(match_idx)
+        else:
+            self.combo_exercise.setCurrentIndex(0)
         self.combo_exercise.setCursor(Qt.CursorShape.PointingHandCursor)
         col_combo.addWidget(self.combo_exercise)
+
+        # Descripción visual dinámica del ejercicio
+        self.lbl_ex_desc = QLabel()
+        self.lbl_ex_desc.setWordWrap(True)
+        self.lbl_ex_desc.setStyleSheet("color: #94A3B8; font-size: 12px; font-weight: 500; padding-top: 2px;")
+        col_combo.addWidget(self.lbl_ex_desc)
+
         ex_layout.addLayout(col_combo)
 
         # Fila 2: Duración y Repeticiones (Con QSpinBox estilizados con flechas ▲ y ▼)
@@ -417,7 +433,9 @@ class ConfigDialog(QDialog):
         row_metrics.setSpacing(10)
 
         # Columna Duración
-        col_dur = QVBoxLayout()
+        self.col_dur_widget = QFrame()
+        col_dur = QVBoxLayout(self.col_dur_widget)
+        col_dur.setContentsMargins(0, 0, 0, 0)
         col_dur.setSpacing(4)
         lbl_dur = QLabel("Duración objetivo:")
         lbl_dur.setProperty("class", "field-label")
@@ -429,10 +447,12 @@ class ConfigDialog(QDialog):
         self.spin_duration.setValue(self.settings.exercise_duration_seconds)
         self.spin_duration.setCursor(Qt.CursorShape.PointingHandCursor)
         col_dur.addWidget(self.spin_duration)
-        row_metrics.addLayout(col_dur)
+        row_metrics.addWidget(self.col_dur_widget)
 
         # Columna Repeticiones
-        col_reps = QVBoxLayout()
+        self.col_reps_widget = QFrame()
+        col_reps = QVBoxLayout(self.col_reps_widget)
+        col_reps.setContentsMargins(0, 0, 0, 0)
         col_reps.setSpacing(4)
         lbl_reps = QLabel("Repeticiones requeridas:")
         lbl_reps.setProperty("class", "field-label")
@@ -444,10 +464,13 @@ class ConfigDialog(QDialog):
         self.spin_reps.setValue(self.settings.exercise_target_reps)
         self.spin_reps.setCursor(Qt.CursorShape.PointingHandCursor)
         col_reps.addWidget(self.spin_reps)
-        row_metrics.addLayout(col_reps)
+        row_metrics.addWidget(self.col_reps_widget)
 
         ex_layout.addLayout(row_metrics)
         main_layout.addWidget(card_exercise)
+
+        self.combo_exercise.currentIndexChanged.connect(self._on_exercise_type_changed)
+        self._on_exercise_type_changed()
 
         # -------------------------------------------------------------
         # Tarjeta 3: Dispositivo y Arranque
@@ -522,6 +545,24 @@ class ConfigDialog(QDialog):
     def _on_bad_posture_changed(self, value: int) -> None:
         """Actualiza el label numérico en tiempo real."""
         self.lbl_bad_val.setText(f"{value} min")
+
+    def _on_exercise_type_changed(self) -> None:
+        """Actualiza la descripción y habilita repeticiones o duración según la métrica del ejercicio."""
+        selected_id = self.combo_exercise.currentData()
+        meta = get_exercise_metadata(selected_id)
+        standing_hint = " ⚠️ Requiere estar de pie." if meta.requires_standing else " 🪑 Ideal para hacer sentado o de pie."
+        self.lbl_ex_desc.setText(f"💡 {meta.description}{standing_hint}")
+
+        if meta.metric_type == "reps":
+            self.spin_reps.setEnabled(True)
+            self.spin_duration.setEnabled(False)
+            self.spin_reps.setStyleSheet("background-color: #161C2C; color: #CCFF00;")
+            self.spin_duration.setStyleSheet("background-color: #0E131F; color: #4B5563;")
+        else:
+            self.spin_reps.setEnabled(False)
+            self.spin_duration.setEnabled(True)
+            self.spin_duration.setStyleSheet("background-color: #161C2C; color: #00F0FF;")
+            self.spin_reps.setStyleSheet("background-color: #0E131F; color: #4B5563;")
 
     def _populate_cameras(self, target_index: int | None = None) -> None:
         """Escanea el sistema y carga automáticamente los nombres reales de las cámaras disponibles."""
