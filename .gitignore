@@ -1,0 +1,50 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+*.pyd
+*.dll
+*.so
+*.dylib
+
+# Caches
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Entornos virtuales
+venv/
+.venv/
+env/
+ENV/
+
+# PyInstaller y compilados binarios
+build/
+dist/
+*.exe
+*.pkg
+*.toc
+*.manifest
+*.spec.bak
+
+# Salidas de Inno Setup / Instaladores
+installer_output/
+Output/
+
+# Modelos binarios de MediaPipe (se descargan automáticamente si faltan)
+models/
+
+# Configuraciones locales de IDE y SO
+.vscode/
+.idea/
+*.swp
+*~
+Thumbs.db
+Desktop.ini
+.DS_Store
+
+# Archivos temporales o de depuración
+*.log
+scratch/
+temp/
+annotated_test.png

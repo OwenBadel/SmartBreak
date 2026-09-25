@@ -1,0 +1,11 @@
+# Dependencias oficiales de SmartBreak
+opencv-python>=4.8.0
+mediapipe>=0.10.0
+PyQt6>=6.5.0
+pystray>=0.19.5
+Pillow>=10.0.0
+pywin32>=306
+pyinstaller>=6.0.0
+numpy>=1.24.0
+pygrabber>=0.2
+comtypes>=1.4.0
