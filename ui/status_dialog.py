@@ -16,6 +16,11 @@ from PyQt6.QtWidgets import (
     QProgressBar, QPushButton, QSizePolicy
 )
 
+try:
+    from vision.exercise_catalog import get_exercise_metadata
+except ImportError:
+    from ..vision.exercise_catalog import get_exercise_metadata
+
 
 class StatusDialog(QDialog):
     """Ventana deportiva con telemetría biomecánica en tiempo real y cero placeholders."""
@@ -300,8 +305,8 @@ class StatusDialog(QDialog):
         lbl_p_ex.setProperty("class", "metric-header")
         col_ex.addWidget(lbl_p_ex)
         
-        ex_name = "Estiramiento Overhead" if self.exercise_type == "overhead_stretch" else "Sentadillas Profundas"
-        self.val_p_ex = QLabel(f"⚡ {ex_name}")
+        meta = get_exercise_metadata(self.exercise_type)
+        self.val_p_ex = QLabel(f"⚡ {meta.name}")
         self.val_p_ex.setStyleSheet("font-size: 14px; font-weight: 800; color: #00F0FF;")
         col_ex.addWidget(self.val_p_ex)
         info_row.addLayout(col_ex)

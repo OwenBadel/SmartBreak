@@ -28,13 +28,15 @@ class VideoCanvas(QWidget):
         self.progress_percent: float = 0.0
         self.is_standing: bool = False
         self.knee_angle: float = 0.0
+        self.requires_standing: bool = False
         self.current_fps: int = 30
 
     def update_frame(self, frame_bgr: np.ndarray, 
                      feedback: str = "", 
                      progress: float = 0.0, 
                      is_standing: bool = False, 
-                     knee_angle: float = 0.0) -> None:
+                     knee_angle: float = 0.0,
+                     requires_standing: bool = False) -> None:
         """
         Recibe el frame procesado por OpenCV y actualiza el renderizado del lienzo.
         """
@@ -45,6 +47,7 @@ class VideoCanvas(QWidget):
         self.progress_percent = progress
         self.is_standing = is_standing
         self.knee_angle = knee_angle
+        self.requires_standing = requires_standing
 
         # Convertir frame BGR de OpenCV a QImage con efecto espejo
         h, w, ch = frame_bgr.shape
@@ -75,8 +78,14 @@ class VideoCanvas(QWidget):
             # Dibujar feed de video directamente escalado
             painter.drawPixmap(target_rect, self.current_pixmap)
             
-            # Marco exterior deportivo con acento Neón Volt o Rojo Alerta
-            accent_color = QColor(204, 255, 0) if self.is_standing else QColor(255, 45, 85)
+            # Marco exterior deportivo con acento Neón Volt, Cyan o Rojo Alerta
+            if self.is_standing:
+                accent_color = QColor(204, 255, 0)
+            elif not self.requires_standing:
+                accent_color = QColor(0, 240, 255)
+            else:
+                accent_color = QColor(255, 45, 85)
+
             painter.setPen(QPen(accent_color, 3))
             painter.drawRoundedRect(target_rect, 14, 14)
 
@@ -138,8 +147,14 @@ class VideoCanvas(QWidget):
             "● AI POSE TRACKER"
         )
 
-        # Centro: Ángulo articular
-        angle_text = f"ÁNGULO DE PIERNA: {self.knee_angle:.1f}°" if self.knee_angle > 0 else "CALIBRANDO CUERPO..."
+        # Centro: Ángulo articular o estado de escritorio
+        if self.knee_angle > 0 and self.requires_standing:
+            angle_text = f"ÁNGULO DE PIERNA: {self.knee_angle:.1f}°"
+        elif not self.requires_standing:
+            angle_text = "EJERCICIO DE ESCRITORIO • ACTIVO"
+        else:
+            angle_text = "CALIBRANDO CUERPO..."
+
         painter.setPen(QColor(255, 255, 255))
         painter.setFont(QFont("Segoe UI", 10, QFont.Weight.Bold))
         painter.drawText(
@@ -149,8 +164,13 @@ class VideoCanvas(QWidget):
         )
 
         # Derecha: Estado de postura
-        status_text = "BIOMECÁNICA ALINEADA" if self.is_standing else "REQUIERE ELEVACIÓN"
-        status_color = QColor(0, 240, 255) if self.is_standing else QColor(255, 45, 85)
+        if self.is_standing or not self.requires_standing:
+            status_text = "BIOMECÁNICA ALINEADA"
+            status_color = QColor(0, 240, 255)
+        else:
+            status_text = "REQUIERE ELEVACIÓN"
+            status_color = QColor(255, 45, 85)
+
         painter.setPen(status_color)
         painter.setFont(QFont("Segoe UI", 10, QFont.Weight.ExtraBold))
         painter.drawText(
@@ -175,16 +195,26 @@ class VideoCanvas(QWidget):
         painter.drawRoundedRect(banner_rect, 14, 14)
 
         # Pill Badge a la izquierda: ESTADO
-        pill_rect = QRect(banner_rect.left() + 16, banner_rect.top() + 12, 130, 26)
-        pill_bg = QColor(204, 255, 0, 40) if self.is_standing else QColor(255, 45, 85, 40)
-        pill_border = QColor(204, 255, 0) if self.is_standing else QColor(255, 45, 85)
+        pill_rect = QRect(banner_rect.left() + 16, banner_rect.top() + 12, 140, 26)
+        if self.is_standing:
+            pill_bg = QColor(204, 255, 0, 40)
+            pill_border = QColor(204, 255, 0)
+            pill_text = "⚡ DE PIE"
+        elif not self.requires_standing:
+            pill_bg = QColor(0, 240, 255, 40)
+            pill_border = QColor(0, 240, 255)
+            pill_text = "🪑 ESCRITORIO"
+        else:
+            pill_bg = QColor(255, 45, 85, 40)
+            pill_border = QColor(255, 45, 85)
+            pill_text = "⚠️ SENTADO"
+
         painter.setBrush(QBrush(pill_bg))
         painter.setPen(QPen(pill_border, 1.5))
         painter.drawRoundedRect(pill_rect, 13, 13)
 
         painter.setFont(QFont("Segoe UI", 10, QFont.Weight.ExtraBold))
         painter.setPen(pill_border)
-        pill_text = "⚡ DE PIE" if self.is_standing else "⚠️ SENTADO"
         painter.drawText(pill_rect, Qt.AlignmentFlag.AlignCenter, pill_text)
 
         # Mensaje de feedback en texto grande y nítido
