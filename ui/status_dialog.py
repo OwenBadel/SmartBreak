@@ -38,7 +38,8 @@ class StatusDialog(QDialog):
         
         # Formato de título único estricto: '{Nombre Ventana} - {Nombre App}'
         self.setWindowTitle("Estado de Rendimiento - SmartBreak")
-        self.setFixedSize(540, 560)
+        self.setMinimumSize(540, 560)
+        self.resize(540, 560)
         self.setWindowFlags(Qt.WindowType.Dialog | Qt.WindowType.WindowCloseButtonHint)
         self._init_ui()
 
