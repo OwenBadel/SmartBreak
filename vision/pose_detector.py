@@ -113,19 +113,11 @@ class PoseDetector:
 
     def _init_backend(self) -> None:
         """Inicializa Tasks API (preferente) o Legacy Solutions API."""
-        log_file = Path("mp_debug.txt")
         try:
-            with open(log_file, "a") as f:
-                f.write("Iniciando backend...\n")
-            
             import mediapipe as mp
-            with open(log_file, "a") as f:
-                f.write(f"Mediapipe importado. dir(mp): {dir(mp)}\n")
             
             # Opción A: Tasks API (MediaPipe 0.10+ en Python 3.12+)
             if hasattr(mp, "tasks"):
-                with open(log_file, "a") as f:
-                    f.write("mp.tasks encontrado, intentando Tasks API...\n")
                 from mediapipe.tasks.python import BaseOptions
                 from mediapipe.tasks.python.vision import PoseLandmarker, PoseLandmarkerOptions, RunningMode
                 
@@ -141,17 +133,11 @@ class PoseDetector:
                     )
                     self._landmarker = PoseLandmarker.create_from_options(options)
                     self.backend = "tasks"
-                    with open(log_file, "a") as f:
-                        f.write("Tasks API inicializado con éxito.\n")
+                    print("[PoseDetector] Inicializado exitosamente con MediaPipe Tasks API.")
                     return
-                else:
-                    with open(log_file, "a") as f:
-                        f.write(f"Archivo de modelo no encontrado: {model_file}\n")
 
             # Opción B: Legacy Solutions API
             if hasattr(mp, "solutions") and hasattr(mp.solutions, "pose"):
-                with open(log_file, "a") as f:
-                    f.write("mp.solutions encontrado, intentando Legacy API...\n")
                 self._legacy_pose = mp.solutions.pose.Pose(
                     static_image_mode=self.static_mode,
                     model_complexity=1,
@@ -160,16 +146,11 @@ class PoseDetector:
                     min_tracking_confidence=self.min_tracking_confidence
                 )
                 self.backend = "solutions"
-                with open(log_file, "a") as f:
-                    f.write("Legacy Solutions API inicializado con éxito.\n")
+                print("[PoseDetector] Inicializado exitosamente con MediaPipe Solutions API.")
                 return
-            else:
-                with open(log_file, "a") as f:
-                    f.write("Fallo: mp no tiene .tasks ni .solutions.pose\n")
+
         except Exception as e:
-            with open(log_file, "a") as f:
-                import traceback
-                f.write(f"Exception in _init_backend: {e}\n{traceback.format_exc()}\n")
+            print(f"[PoseDetector] Error inicializando backend de MediaPipe: {e}")
             self.backend = "none"
 
     def process_frame(self, frame_bgr: np.ndarray) -> Tuple[Optional[PoseDetectionResult], Optional[np.ndarray]]:
