@@ -147,22 +147,6 @@ class VideoCanvas(QWidget):
             "● AI POSE TRACKER"
         )
 
-        # Centro: Ángulo articular o estado de escritorio
-        if self.knee_angle > 0 and self.requires_standing:
-            angle_text = f"ÁNGULO DE PIERNA: {self.knee_angle:.1f}°"
-        elif not self.requires_standing:
-            angle_text = "EJERCICIO DE ESCRITORIO • ACTIVO"
-        else:
-            angle_text = "CALIBRANDO CUERPO..."
-
-        painter.setPen(QColor(255, 255, 255))
-        painter.setFont(QFont("Segoe UI", 10, QFont.Weight.Bold))
-        painter.drawText(
-            top_bar_rect,
-            Qt.AlignmentFlag.AlignCenter,
-            angle_text
-        )
-
         # Derecha: Estado de postura
         if self.is_standing or not self.requires_standing:
             status_text = "BIOMECÁNICA ALINEADA"
