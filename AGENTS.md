@@ -43,10 +43,12 @@ Este proyecto implementa:
 - Trigonometría espacial de articulaciones (ángulos cuello-hombro y torso-cadera).
 - Hilos concurrentes desacoplados (Hilo pasivo de muestreo a 1-2 FPS vs Hilo GUI Qt).
 - Intercepción de eventos de teclado y ventanas modal topmost en Windows.
+- `auto_commit_funcional`: Commits semánticos en español y push a GitHub por funcionalidad operativa.
 
 ---
 
 ## 📜 5. Reglas de Operación y Entrega
-1. **Español Obligatorio:** Toda la documentación, comentarios y textos en UI deben estar redactados en español técnico profesional.
+1. **Español Obligatorio:** Toda la documentación, comentarios, textos en UI y mensajes de commit deben estar redactados en español técnico profesional.
 2. **Cero Placeholders:** Todo módulo debe contar con manejo de excepciones, reconexión de cámara y cálculo matemático riguroso.
 3. **Optimización Energética:** En modo pasivo, la cámara NO debe correr a 30 o 60 FPS; debe muestrear a 1-2 FPS liberando la GPU y CPU.
+4. **Commits Autónomos y Sincronización Continua:** A medida que se desarrollen funciones reales, probadas y operativas en SmartBreak, el agente debe realizar automáticamente el commit en español y push al repositorio de GitHub (`https://github.com/OwenBadel/SmartBreak.git`).
