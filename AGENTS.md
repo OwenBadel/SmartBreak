@@ -32,7 +32,7 @@ Este proyecto implementa:
 - `PyQt6`: Interfaz gráfica a pantalla completa, bloqueo de atajos y renderizado Qt.
 - `pystray` + `Pillow`: Control silencioso en la bandeja del sistema (System Tray).
 - `opencv-python`: Captura y procesamiento de frames de cámara web.
-- `mediapipe`: Extracción de landmarks de postura humana (33 puntos anatómicos).
+- `mediapipe`: [[Python/PY_google_mediapipe_vision_pose|Google MediaPipe Pose]] - Extracción de landmarks de postura humana (33 puntos anatómicos).
 - `pywin32`: Interacciones con APIs del sistema operativo Windows.
 - `pyinstaller` + `Inno Setup`: Empaquetado y generación de instalador nativo ejecutable.
 
