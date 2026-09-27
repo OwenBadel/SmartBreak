@@ -51,3 +51,7 @@ annotated_test.png
 dist_*/
 mp_debug.txt
 test_mp.spec
+
+# Directivas agenticas y tooling local privado
+AGENTS.md
+.agents/
