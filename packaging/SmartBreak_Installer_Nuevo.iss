@@ -2,7 +2,7 @@
 ; Información General
 AppName=SmartBreak
 AppVersion=1.1.0
-AppPublisher=LemonFabrica
+AppPublisher=Owen Badel Hooker
 
 ; Directorio de Instalación (Requiere permisos de administrador por defecto)
 DefaultDirName={autopf}\SmartBreak
