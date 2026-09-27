@@ -57,7 +57,7 @@ def main():
     # Configuración de metadatos de la aplicación
     app.setApplicationName("SmartBreak")
     app.setApplicationDisplayName("")  # Permite formato de títulos estricto sin duplicación
-    app.setOrganizationName("Lemon Software Factory")
+    app.setOrganizationName("Owen Badel Hooker")
     
     # REGLA CRUCIAL PARA TRAY APPS:
     # Evitar que la aplicación se cierre al destruir la ventana de bloqueo o el diálogo de configuración
