@@ -41,7 +41,7 @@ SmartBreak es una aplicación de escritorio nativa para Windows orientada a desa
 ## 📁 Estructura del Proyecto
 
 ```
-PROJ_010_SmartBreak/
+SmartBreak/
 │
 ├── requirements.txt                   # Dependencias fijadas (OpenCV, MediaPipe, PyQt6, pystray, pillow, pywin32)
 ├── run.py                             # Punto de entrada principal
